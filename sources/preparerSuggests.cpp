@@ -50,7 +50,7 @@ bool my_cmp(const sug& a, const sug& b) {
 json preparerSug::getSuggestions(std::string input) {
   std::vector<json> goodSugs;
   std::sort(suggestions.begin(), suggestions.end(), my_cmp);
-
+  mutex.lock_shared();
   for (size_t i = 0; i < suggestions.size(); ++i) {
     if (suggestions[i].id == input) {
       json gsug;
@@ -59,6 +59,7 @@ json preparerSug::getSuggestions(std::string input) {
       goodSugs.push_back(gsug);
     }
   }
+  mutex.unlock_shared();
 
 
   json j_goodSugs(goodSugs);

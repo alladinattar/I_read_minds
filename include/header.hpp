@@ -42,7 +42,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
  private:
   // The socket for the currently connected client.
   tcp::socket socket_;
-  preparerSug sugObj_;
+  preparerSug& sugObj_;
   // The buffer for performing reads.
   beast::flat_buffer buffer_{8192};
 
@@ -98,7 +98,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
     if (request_.target() == "/v1/api/suggest") {
       response_.set(http::field::content_type, "application/json");
 
-      response_.body() = sugObj.getSuggestions(request_.body());
+      response_.body() = sugObj_.getSuggestions(request_.body());
 
     } else {
       response_.result(http::status::not_found);
@@ -134,7 +134,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
 };
 
 // "Loop" forever accepting new connections.
-void http_server(tcp::acceptor& acceptor, tcp::socket& socket, preparerSug& sugObj) {//,sugPreferer* pointer to sugPreferer sugObj
+void http_server(tcp::acceptor& acceptor, tcp::socket& socket, preparerSug& sugObj) {
   acceptor.async_accept(socket, [&](beast::error_code ec) {
     if (!ec) std::make_shared<http_connection>(std::move(socket), sugObj)->start();
     http_server(acceptor, socket, sugObj);

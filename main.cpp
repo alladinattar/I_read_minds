@@ -22,7 +22,6 @@ int main(int argc, char* argv[]) {
         preparerSug("/home/rinat/labs/lab-07-http-server/suggestions.json");
     prepSug.serveSuggestions();
 
-    std::cout<<prepSug.getSuggestions("hel").dump(4)<<std::endl;
     std::thread thrSug([&prepSug]{
       prepSug.serveSuggestions();
     });
@@ -32,7 +31,7 @@ int main(int argc, char* argv[]) {
     tcp::acceptor acceptor{ioc, {address, port}};
     tcp::socket socket{ioc};
 
-    http_server(acceptor, socket);
+    http_server(acceptor, socket,prepSug);
 
     ioc.run();
   } catch (std::exception const& e) {

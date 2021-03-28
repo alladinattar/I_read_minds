@@ -1,3 +1,5 @@
+#ifndef INCLUDE_PREPARESUGGESTS_HPP_
+#define INCLUDE_PREPARESUGGESTS_HPP_
 #include <shared_mutex>
 #include "nlohmann/json.hpp"
 struct sug{
@@ -26,3 +28,4 @@ class preparerSug{
   std::string filename_;
   std::vector<sug> suggestions;
 };
+#endif
