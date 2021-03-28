@@ -8,7 +8,7 @@ struct sug{
 
 struct sugUnit{//with position
   std::string text;
-  int position;
+  size_t position;
 };
 
 class preparerSug{
@@ -16,7 +16,7 @@ class preparerSug{
   preparerSug(std::string filename):filename_(filename){};
 
   void serveSuggestions();//every 15 min openfile read close and update collection  //simple lock infinitive loop with sleep
-  std::vector<sugUnit> getSuggestions(std::string input);//using lockshared
+  nlohmann::json getSuggestions(std::string input);//using lockshared
 
  private:
   nlohmann::json data;

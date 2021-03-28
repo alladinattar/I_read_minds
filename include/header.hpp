@@ -12,7 +12,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
-
+#include "prepareSuggests.hpp"
 namespace beast = boost::beast;    // from <boost/beast.hpp>
 namespace http = beast::http;      // from <boost/beast/http.hpp>
 namespace net = boost::asio;       // from <boost/asio.hpp>
@@ -32,8 +32,7 @@ std::time_t now() { return std::time(0); }
 
 class http_connection : public std::enable_shared_from_this<http_connection> {
  public:
-  http_connection(tcp::socket socket/*,sugObj*/) : socket_(std::move(socket))//,sugObj_(sugObj)
-  {}
+  http_connection(tcp::socket socket, preparerSug& sugObj) : socket_(std::move(socket)), sugObj_(sugObj){}
   // Initiate the asynchronous operations associated with the connection.
   void start() {
     read_request();
@@ -43,7 +42,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
  private:
   // The socket for the currently connected client.
   tcp::socket socket_;
-  //sugPreferer sugObj;
+  preparerSug sugObj_;
   // The buffer for performing reads.
   beast::flat_buffer buffer_{8192};
 
@@ -98,15 +97,9 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
   void create_response() {
     if (request_.target() == "/v1/api/suggest") {
       response_.set(http::field::content_type, "application/json");
-      response_.body() = R"({
-  "items": [
-    {
-      "name": "Ivanov Petr",
-      "group": "1",
-      "avg": "4.25",
-      "debt": null
-    }]
-})";
+
+      response_.body() = sugObj.getSuggestions(request_.body());
+
     } else {
       response_.result(http::status::not_found);
       response_.set(http::field::content_type, "text/plain");
@@ -141,10 +134,10 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
 };
 
 // "Loop" forever accepting new connections.
-void http_server(tcp::acceptor& acceptor, tcp::socket& socket) {//,sugPreferer* pointer to sugPreferer sugObj
+void http_server(tcp::acceptor& acceptor, tcp::socket& socket, preparerSug& sugObj) {//,sugPreferer* pointer to sugPreferer sugObj
   acceptor.async_accept(socket, [&](beast::error_code ec) {
-    if (!ec) std::make_shared<http_connection>(std::move(socket)/*, sugObj*/)->start();
-    http_server(acceptor, socket);
+    if (!ec) std::make_shared<http_connection>(std::move(socket), sugObj)->start();
+    http_server(acceptor, socket, sugObj);
   });
 }
 #endif  // INCLUDE_HEADER_HPP_

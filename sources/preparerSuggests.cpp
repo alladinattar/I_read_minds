@@ -33,13 +33,34 @@ void preparerSug::serveSuggestions() {
     auto sugObj = item.get<sug>();
     suggestions.push_back(sugObj);
   }
-  std::cout<<suggestions[0].name<<std::endl;
   mutex.unlock();
   sleep(5);
   //
 }
 
+void to_json(json& j, const sugUnit& s) {
+  j = json{{"text", s.text}, {"position", s.position}};
+}
 
-std::vector<sugUnit> preparerSug::getSuggestions(std::string input) {
-  
+bool my_cmp(const sug& a, const sug& b) {
+  // smallest comes first
+  return a.cost > b.cost;
+}
+
+json preparerSug::getSuggestions(std::string input) {
+  std::vector<json> goodSugs;
+  std::sort(suggestions.begin(), suggestions.end(), my_cmp);
+
+  for (size_t i = 0; i < suggestions.size(); ++i) {
+    if (suggestions[i].id == input) {
+      json gsug;
+      sugUnit su = sugUnit{suggestions[i].name, i};
+      to_json(gsug, su);
+      goodSugs.push_back(gsug);
+    }
+  }
+
+
+  json j_goodSugs(goodSugs);
+  return j_goodSugs;
 }
