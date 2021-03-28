@@ -18,23 +18,25 @@ void from_json(const json& j, sug& s) {
 }
 
 void preparerSug::serveSuggestions() {
-  mutex.lock();
-  suggestions.clear();
-  if (filename_.empty())
-    throw std::invalid_argument("the path isn't available");
-  std::ifstream file(filename_);
-  if (!file) {
-    throw std::out_of_range{"unable to open json: " + filename_};
-  }
-  data.clear();
-  file >> data;
+ /* while (true) {*/
+    mutex.lock();
+    suggestions.clear();
+    if (filename_.empty())
+      throw std::invalid_argument("the path isn't available");
+    std::ifstream file(filename_);
+    if (!file) {
+      throw std::out_of_range{"unable to open json: " + filename_};
+    }
+    data.clear();
+    file >> data;
 
-  for (auto const& item : data.at("suggestions")) {
-    auto sugObj = item.get<sug>();
-    suggestions.push_back(sugObj);
-  }
-  mutex.unlock();
-  sleep(5);
+    for (auto const& item : data.at("suggestions")) {
+      auto sugObj = item.get<sug>();
+      suggestions.push_back(sugObj);
+    }
+    mutex.unlock();
+    sleep(5);
+
   //
 }
 
@@ -49,8 +51,8 @@ bool my_cmp(const sug& a, const sug& b) {
 
 json preparerSug::getSuggestions(std::string input) {
   std::vector<json> goodSugs;
+  mutex.lock();
   std::sort(suggestions.begin(), suggestions.end(), my_cmp);
-  mutex.lock_shared();
   for (size_t i = 0; i < suggestions.size(); ++i) {
     if (suggestions[i].id == input) {
       json gsug;
@@ -59,8 +61,7 @@ json preparerSug::getSuggestions(std::string input) {
       goodSugs.push_back(gsug);
     }
   }
-  mutex.unlock_shared();
-
+  mutex.unlock();
 
   json j_goodSugs(goodSugs);
   return j_goodSugs;

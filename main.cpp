@@ -23,15 +23,17 @@ int main(int argc, char* argv[]) {
     prepSug.serveSuggestions();
 
     std::thread thrSug([&prepSug]{
+
       prepSug.serveSuggestions();
     });
+    thrSug.detach();
     // here create sugpreferer object
     // call serveSuggestions in thread
     // pointer for sugpreferer obj -> http_server
     tcp::acceptor acceptor{ioc, {address, port}};
     tcp::socket socket{ioc};
 
-    http_server(acceptor, socket,prepSug);
+    http_server(acceptor, socket,&prepSug);
 
     ioc.run();
   } catch (std::exception const& e) {

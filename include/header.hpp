@@ -12,13 +12,12 @@
 #include <iostream>
 #include <memory>
 #include <string>
+
 #include "prepareSuggests.hpp"
 namespace beast = boost::beast;    // from <boost/beast.hpp>
 namespace http = beast::http;      // from <boost/beast/http.hpp>
 namespace net = boost::asio;       // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
-
-
 
 namespace my_program_state {
 std::size_t request_count() {
@@ -26,13 +25,13 @@ std::size_t request_count() {
   return ++count;
 }
 
-
 std::time_t now() { return std::time(0); }
 }  // namespace my_program_state
 
 class http_connection : public std::enable_shared_from_this<http_connection> {
  public:
-  http_connection(tcp::socket socket, preparerSug& sugObj) : socket_(std::move(socket)), sugObj_(sugObj){}
+  http_connection(tcp::socket socket, preparerSug* sugObj)
+      : socket_(std::move(socket)), sugObj_(sugObj) {}
   // Initiate the asynchronous operations associated with the connection.
   void start() {
     read_request();
@@ -42,7 +41,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
  private:
   // The socket for the currently connected client.
   tcp::socket socket_;
-  preparerSug& sugObj_;
+  preparerSug* sugObj_;
   // The buffer for performing reads.
   beast::flat_buffer buffer_{8192};
 
@@ -76,7 +75,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
       case http::verb::post:
         response_.result(http::status::ok);
         response_.set(http::field::server, "Beast");
-        std::cout << request_.body().data()<<std::endl;
+        std::cout << request_.body().data() << std::endl;
         create_response();
         break;
 
@@ -85,8 +84,8 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
         // we do not recognize the request method.
         response_.result(http::status::bad_request);
         response_.set(http::field::content_type, "text/plain");
-        response_.body() = "Invalid request-method '" + std::string(
-            request_.method_string()) + "'";
+        response_.body() = "Invalid request-method '" +
+                           std::string(request_.method_string()) + "'";
         break;
     }
 
@@ -97,8 +96,9 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
   void create_response() {
     if (request_.target() == "/v1/api/suggest") {
       response_.set(http::field::content_type, "application/json");
-
-      response_.body() = sugObj_.getSuggestions(request_.body());
+      //std::cout << sugObj_.getSuggestions(request_.body()).dump(4) << std::endl;
+      response_.body() = sugObj_->getSuggestions(request_.body()).dump(4);
+      // response_.body() = (sugObj_.getSuggestions(request_.body()));
 
     } else {
       response_.result(http::status::not_found);
@@ -134,9 +134,11 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
 };
 
 // "Loop" forever accepting new connections.
-void http_server(tcp::acceptor& acceptor, tcp::socket& socket, preparerSug& sugObj) {
+void http_server(tcp::acceptor& acceptor, tcp::socket& socket,
+                 preparerSug* sugObj) {
   acceptor.async_accept(socket, [&](beast::error_code ec) {
-    if (!ec) std::make_shared<http_connection>(std::move(socket), sugObj)->start();
+    if (!ec)
+      std::make_shared<http_connection>(std::move(socket), sugObj)->start();
     http_server(acceptor, socket, sugObj);
   });
 }
