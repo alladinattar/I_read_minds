@@ -1,17 +1,19 @@
-[
-  {
-    "id": "hel",
-    "name": "hello world",
-    "cost": 70
-  },
-  {
-    "id": "hel",
-    "name": "hello",
-    "cost": 10
-  },
-  {
-    "id": "hel",
-    "name": "helm",
-    "cost": 200
-  }
-]
+{
+  "suggestions": [
+    {
+      "id": "hel",
+      "name": "hellofd",
+      "cost": 70
+    },
+    {
+      "id": "hel",
+      "name": "hello",
+      "cost": 10
+    },
+    {
+      "id": "hel",
+      "name": "helm",
+      "cost": 200
+    }
+  ]
+}

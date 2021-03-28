@@ -1,6 +1,6 @@
 #include "header.hpp"
 #include "iostream"
-
+#include "prepareSuggests.hpp"
 int main(int argc, char* argv[]) {
   try {
     // Check command line arguments.
@@ -13,16 +13,25 @@ int main(int argc, char* argv[]) {
       return EXIT_FAILURE;
     }
 
-    auto const address = net::ip::make_address(argv[1]);
-    unsigned short port = static_cast<unsigned short>(std::atoi(argv[2]));
+   // auto const address = net::ip::make_address(argv[1]);
+    //unsigned short port = static_cast<unsigned short>(std::atoi(argv[2]));
 
-    net::io_context ioc{1};
+    //net::io_context ioc{1};
+    while(true){
+    preparerSug prepSug = preparerSug("/home/rinat/labs/lab-07-http-server/suggestions.json");
+    prepSug.serveSuggestions();}
+    /*std::thread thrSug([&prepSug]{
+      prepSug.serveSuggestions();
+    });*/
+//here create sugpreferer object
+    //call serveSuggestions in thread
+    //pointer for sugpreferer obj -> http_server
+    //tcp::acceptor acceptor{ioc, {address, port}};
+    //tcp::socket socket{ioc};
 
-    tcp::acceptor acceptor{ioc, {address, port}};
-    tcp::socket socket{ioc};
-    http_server(acceptor, socket);
+    //http_server(acceptor, socket);
 
-    ioc.run();
+    //ioc.run();
   } catch (std::exception const& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     return EXIT_FAILURE;

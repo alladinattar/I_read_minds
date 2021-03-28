@@ -18,10 +18,7 @@ namespace http = beast::http;      // from <boost/beast/http.hpp>
 namespace net = boost::asio;       // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
-struct suggest {
-  std::string text;
-  int position;
-};
+
 
 namespace my_program_state {
 std::size_t request_count() {
@@ -29,15 +26,14 @@ std::size_t request_count() {
   return ++count;
 }
 
-std::vector<suggest> suggests;
 
 std::time_t now() { return std::time(0); }
 }  // namespace my_program_state
 
 class http_connection : public std::enable_shared_from_this<http_connection> {
  public:
-  http_connection(tcp::socket socket) : socket_(std::move(socket)) {}
-
+  http_connection(tcp::socket socket/*,sugObj*/) : socket_(std::move(socket))//,sugObj_(sugObj)
+  {}
   // Initiate the asynchronous operations associated with the connection.
   void start() {
     read_request();
@@ -47,15 +43,15 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
  private:
   // The socket for the currently connected client.
   tcp::socket socket_;
-
+  //sugPreferer sugObj;
   // The buffer for performing reads.
   beast::flat_buffer buffer_{8192};
 
   // The request message.
-  http::request<http::dynamic_body> request_;
+  http::request<http::string_body> request_;
 
   // The response message.
-  http::response<http::dynamic_body> response_;
+  http::response<http::string_body> response_;
 
   // The timer for putting a deadline on connection processing.
   net::steady_timer deadline_{socket_.get_executor(), std::chrono::seconds(60)};
@@ -76,10 +72,12 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
   void process_request() {
     response_.version(request_.version());
     response_.keep_alive(false);
+
     switch (request_.method()) {
       case http::verb::post:
         response_.result(http::status::ok);
         response_.set(http::field::server, "Beast");
+        std::cout << request_.body().data()<<std::endl;
         create_response();
         break;
 
@@ -88,9 +86,8 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
         // we do not recognize the request method.
         response_.result(http::status::bad_request);
         response_.set(http::field::content_type, "text/plain");
-        beast::ostream(response_.body())
-            << "Invalid request-method '"
-            << std::string(request_.method_string()) << "'";
+        response_.body() = "Invalid request-method '" + std::string(
+            request_.method_string()) + "'";
         break;
     }
 
@@ -101,7 +98,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
   void create_response() {
     if (request_.target() == "/v1/api/suggest") {
       response_.set(http::field::content_type, "application/json");
-      beast::ostream(response_.body()) << R"({
+      response_.body() = R"({
   "items": [
     {
       "name": "Ivanov Petr",
@@ -110,11 +107,10 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
       "debt": null
     }]
 })";
-
     } else {
       response_.result(http::status::not_found);
       response_.set(http::field::content_type, "text/plain");
-      beast::ostream(response_.body()) << "File not found\r\n";
+      /*beast::ostream(response_.body()) << "File not found\r\n";*/
     }
   }
 
@@ -145,9 +141,9 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
 };
 
 // "Loop" forever accepting new connections.
-void http_server(tcp::acceptor& acceptor, tcp::socket& socket) {
+void http_server(tcp::acceptor& acceptor, tcp::socket& socket) {//,sugPreferer* pointer to sugPreferer sugObj
   acceptor.async_accept(socket, [&](beast::error_code ec) {
-    if (!ec) std::make_shared<http_connection>(std::move(socket))->start();
+    if (!ec) std::make_shared<http_connection>(std::move(socket)/*, sugObj*/)->start();
     http_server(acceptor, socket);
   });
 }
