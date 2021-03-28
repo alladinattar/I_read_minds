@@ -30,7 +30,7 @@ std::time_t now() { return std::time(0); }
 
 class http_connection : public std::enable_shared_from_this<http_connection> {
  public:
-  http_connection(tcp::socket socket, preparerSug* sugObj)
+  http_connection(tcp::socket socket, preparerSug& sugObj)
       : socket_(std::move(socket)), sugObj_(sugObj) {}
   // Initiate the asynchronous operations associated with the connection.
   void start() {
@@ -41,7 +41,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
  private:
   // The socket for the currently connected client.
   tcp::socket socket_;
-  preparerSug* sugObj_;
+  preparerSug& sugObj_;
   // The buffer for performing reads.
   beast::flat_buffer buffer_{8192};
 
@@ -97,7 +97,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
     if (request_.target() == "/v1/api/suggest") {
       response_.set(http::field::content_type, "application/json");
       //std::cout << sugObj_.getSuggestions(request_.body()).dump(4) << std::endl;
-      response_.body() = sugObj_->getSuggestions(request_.body()).dump(4);
+      response_.body() = sugObj_.getSuggestions(request_.body()).dump(4);
       // response_.body() = (sugObj_.getSuggestions(request_.body()));
 
     } else {
@@ -135,7 +135,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
 
 // "Loop" forever accepting new connections.
 void http_server(tcp::acceptor& acceptor, tcp::socket& socket,
-                 preparerSug* sugObj) {
+                 preparerSug& sugObj) {
   acceptor.async_accept(socket, [&](beast::error_code ec) {
     if (!ec)
       std::make_shared<http_connection>(std::move(socket), sugObj)->start();

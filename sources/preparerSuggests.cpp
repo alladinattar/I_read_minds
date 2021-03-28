@@ -18,26 +18,28 @@ void from_json(const json& j, sug& s) {
 }
 
 void preparerSug::serveSuggestions() {
- /* while (true) {*/
-    mutex.lock();
-    suggestions.clear();
-    if (filename_.empty())
-      throw std::invalid_argument("the path isn't available");
-    std::ifstream file(filename_);
-    if (!file) {
-      throw std::out_of_range{"unable to open json: " + filename_};
-    }
-    data.clear();
-    file >> data;
+  while (true) {
 
-    for (auto const& item : data.at("suggestions")) {
-      auto sugObj = item.get<sug>();
-      suggestions.push_back(sugObj);
-    }
-    mutex.unlock();
-    sleep(5);
+  mutex.lock();
+  std::ifstream file(filename_);
+  suggestions.clear();
+  if (filename_.empty())
+    throw std::invalid_argument("the path isn't available");
 
-  //
+  if (!file) {
+    throw std::out_of_range{"unable to open json: " + filename_};
+  }
+  data.clear();
+  file >> data;
+  file.close();
+  for (auto const& item : data.at("suggestions")) {
+    auto sugObj = item.get<sug>();
+    suggestions.push_back(sugObj);
+  }
+  sleep(5);
+  mutex.unlock();
+
+  }
 }
 
 void to_json(json& j, const sugUnit& s) {
