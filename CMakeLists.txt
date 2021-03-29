@@ -38,7 +38,6 @@ find_package(Threads)
 
 add_library(${PROJECT_NAME} STATIC
         # enum your files and delete this comment
-        ${CMAKE_CURRENT_SOURCE_DIR}/sources/source.cpp
         include/prepareSuggests.hpp
         sources/preparerSuggests.cpp
         include/server.hpp)
