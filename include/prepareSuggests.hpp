@@ -2,7 +2,8 @@
 #ifndef INCLUDE_PREPARESUGGESTS_HPP_
 #define INCLUDE_PREPARESUGGESTS_HPP_
 #include <shared_mutex>
-
+#include <string>
+#include <vector>
 #include "nlohmann/json.hpp"
 struct sug {
   std::string id;
@@ -17,7 +18,7 @@ struct sugUnit {  // with position
 
 class preparerSug {
  public:
-  explicit preparerSug(std::string filename) : filename_(filename){};
+  explicit preparerSug(std::string filename) : filename_(filename){}
 
   void serveSuggestions();
   nlohmann::json getSuggestions(std::string input);

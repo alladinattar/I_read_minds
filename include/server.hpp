@@ -1,10 +1,11 @@
 // Copyright 2021 Mukaev Rinat <rinamuka4@gmail.com>
 
-#ifndef INCLUDE_HEADER_HPP_
-#define INCLUDE_HEADER_HPP_
+#ifndef INCLUDE_SERVER_HPP_
+#define INCLUDE_SERVER_HPP_
 #include <boost/asio.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <utility>
 #include <boost/beast/version.hpp>
 #include <chrono>
 #include <cstdlib>
@@ -137,4 +138,4 @@ void http_server(tcp::acceptor& acceptor, tcp::socket& socket,
     http_server(acceptor, socket, sugObj);
   });
 }
-#endif  // INCLUDE_HEADER_HPP_
+#endif  // INCLUDE_SERVER_HPP_
