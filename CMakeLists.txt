@@ -41,7 +41,7 @@ add_library(${PROJECT_NAME} STATIC
         ${CMAKE_CURRENT_SOURCE_DIR}/sources/source.cpp
         include/prepareSuggests.hpp
         sources/preparerSuggests.cpp
-        include/header.hpp)
+        include/server.hpp)
 target_link_libraries(${PROJECT_NAME} nlohmann_json::nlohmann_json
         ${Boost_BEAST_LIBRARY}
 

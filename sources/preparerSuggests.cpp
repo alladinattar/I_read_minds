@@ -52,7 +52,6 @@ bool my_cmp(const sug& a, const sug& b) {
 
 json preparerSug::getSuggestions(std::string input) {
   auto j = json::parse(input);
-  std::cout << j["input"].get<std::string>() << std::endl;
   std::vector<json> goodSugs;
   mutex.lock();
   std::sort(suggestions.begin(), suggestions.end(), my_cmp);

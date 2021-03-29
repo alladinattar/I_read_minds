@@ -70,12 +70,11 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
   void process_request() {
     response_.version(request_.version());
     response_.keep_alive(false);
-
     switch (request_.method()) {
       case http::verb::post:
         response_.result(http::status::ok);
         response_.set(http::field::server, "Beast");
-        std::cout << request_.body().data() << std::endl;
+
         create_response();
         break;
 
@@ -96,14 +95,10 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
   void create_response() {
     if (request_.target() == "/v1/api/suggest") {
       response_.set(http::field::content_type, "application/json");
-      //std::cout << sugObj_.getSuggestions(request_.body()).dump(4) << std::endl;
       response_.body() = sugObj_.getSuggestions(request_.body()).dump(4);
-      // response_.body() = (sugObj_.getSuggestions(request_.body()));
-
     } else {
       response_.result(http::status::not_found);
       response_.set(http::field::content_type, "text/plain");
-      /*beast::ostream(response_.body()) << "File not found\r\n";*/
     }
   }
 

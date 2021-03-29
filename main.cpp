@@ -1,6 +1,6 @@
-#include "header.hpp"
 #include "iostream"
 #include "prepareSuggests.hpp"
+#include "server.hpp"
 int main(int argc, char* argv[]) {
   try {
     // Check command line arguments.
