@@ -20,42 +20,28 @@ namespace http = beast::http;      // from <boost/beast/http.hpp>
 namespace net = boost::asio;       // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;  // from <boost/asio/ip/tcp.hpp>
 
-namespace my_program_state {
-std::size_t request_count() {
-  static std::size_t count = 0;
-  return ++count;
-}
 
-std::time_t now() { return std::time(0); }
-}  // namespace my_program_state
 
 class http_connection : public std::enable_shared_from_this<http_connection> {
  public:
   http_connection(tcp::socket socket, preparerSug& sugObj)
       : socket_(std::move(socket)), sugObj_(sugObj) {}
-  // Initiate the asynchronous operations associated with the connection.
   void start() {
     read_request();
     check_deadline();
   }
 
  private:
-  // The socket for the currently connected client.
   tcp::socket socket_;
   preparerSug& sugObj_;
-  // The buffer for performing reads.
   beast::flat_buffer buffer_{8192};
 
-  // The request message.
   http::request<http::string_body> request_;
 
-  // The response message.
   http::response<http::string_body> response_;
 
-  // The timer for putting a deadline on connection processing.
   net::steady_timer deadline_{socket_.get_executor(), std::chrono::seconds(60)};
 
-  // Asynchronously receive a complete request message.
   void read_request() {
     auto self = shared_from_this();
 
@@ -67,7 +53,6 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
         });
   }
 
-  // Determine what needs to be done with the request message.
   void process_request() {
     response_.version(request_.version());
     response_.keep_alive(false);
@@ -80,8 +65,6 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
         break;
 
       default:
-        // We return responses indicating an error if
-        // we do not recognize the request method.
         response_.result(http::status::bad_request);
         response_.set(http::field::content_type, "text/plain");
         response_.body() = "Invalid request-method '" +
@@ -92,7 +75,6 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
     write_response();
   }
 
-  // Construct a response message based on the program state.
   void create_response() {
     if (request_.target() == "/v1/api/suggest") {
       response_.set(http::field::content_type, "application/json");
@@ -103,7 +85,6 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
     }
   }
 
-  // Asynchronously transmit the response message.
   void write_response() {
     auto self = shared_from_this();
 
@@ -116,20 +97,17 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
                       });
   }
 
-  // Check whether we have spent enough time on this connection.
   void check_deadline() {
     auto self = shared_from_this();
 
     deadline_.async_wait([self](beast::error_code ec) {
       if (!ec) {
-        // Close socket to cancel any outstanding operation.
         self->socket_.close(ec);
       }
     });
   }
 };
 
-// "Loop" forever accepting new connections.
 void http_server(tcp::acceptor& acceptor, tcp::socket& socket,
                  preparerSug& sugObj) {
   acceptor.async_accept(socket, [&](beast::error_code ec) {

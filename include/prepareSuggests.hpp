@@ -11,7 +11,7 @@ struct sug {
   int cost;
 };
 
-struct sugUnit {  // with position
+struct sugUnit {
   std::string text;
   size_t position;
 };
