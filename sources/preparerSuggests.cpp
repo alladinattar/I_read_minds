@@ -1,6 +1,7 @@
+// Copyright 2021 <rinamuka4@gmail.com>
+
 #include <fstream>
 #include <iostream>
-#include <thread>
 
 #include "nlohmann/json.hpp"
 #include "prepareSuggests.hpp"
@@ -64,9 +65,9 @@ json preparerSug::getSuggestions(std::string input) {
     }
   }
   mutex.unlock();
-  json ja ;
+  json ja;
   ja["suggestions"] = goodSugs;
-  //json j_goodSugs(goodSugs);
+  // json j_goodSugs(goodSugs);
 
   return ja;
 }

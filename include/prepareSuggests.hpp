@@ -1,24 +1,26 @@
+// Copyright 2021 <rinamuka4@gmail.com>
 #ifndef INCLUDE_PREPARESUGGESTS_HPP_
 #define INCLUDE_PREPARESUGGESTS_HPP_
 #include <shared_mutex>
+
 #include "nlohmann/json.hpp"
-struct sug{
+struct sug {
   std::string id;
   std::string name;
   int cost;
 };
 
-struct sugUnit{//with position
+struct sugUnit {  // with position
   std::string text;
   size_t position;
 };
 
-class preparerSug{
+class preparerSug {
  public:
-  preparerSug(std::string filename):filename_(filename){};
+  explicit preparerSug(std::string filename) : filename_(filename){};
 
-  void serveSuggestions();//every 15 min openfile read close and update collection  //simple lock infinitive loop with sleep
-  nlohmann::json getSuggestions(std::string input);//using lockshared
+  void serveSuggestions();
+  nlohmann::json getSuggestions(std::string input);
 
  private:
   nlohmann::json data;
@@ -28,4 +30,4 @@ class preparerSug{
   std::string filename_;
   std::vector<sug> suggestions;
 };
-#endif
+#endif  // INCLUDE_PREPARESUGGESTS_HPP_
